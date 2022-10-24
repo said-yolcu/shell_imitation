@@ -1,8 +1,12 @@
-#include <string.h>
+
+#include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+#include "char_io.h"
 
 #define MAX_LINE 80
 #define MAX_ARGS 4 // There will be at most 4 arguments
@@ -14,7 +18,7 @@ void whoami(char *);
 int main(void)
 {
     char name[MAX_LINE];
-    whoami(name);
+    // whoami(name);
     strcpy(name, "said"); // CHANGE THAT
 
     printf("\n%s >>> ", name);
@@ -85,11 +89,24 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
 int getArgs(char argums[][MAX_LINE + 1], int lineLim, int argLim)
 {
     int c;
-    int strIn = 0;   // String index
-    int argIn = 0;   // Argument index
-    int numArgs = 0; // Number of arguments
+    int strIn = 0;    // String index
+    int argIn = 0;    // Argument index
+    int word = false; // Whether the cha pointer currently points to a word,
+                      // or a non-word char such as newline or blank space
 
-    while ((c = getc(stdin)) != '\n') // Proceed until newline character
+    // Skip blank spaces
+    while (true)
+    {
+        if ((c = getch(stdin)) == ' ')
+            continue;
+        else
+        {
+            ungetch(c);
+            break;
+        }
+    }
+
+    while ((c = getch(stdin)) != '\n') // Proceed until newline character
     {
         if (strIn >= lineLim || argIn >= argLim)
         {
@@ -98,21 +115,38 @@ int getArgs(char argums[][MAX_LINE + 1], int lineLim, int argLim)
         }
         if (c != ' ')
         {
+            word = true;
             argums[argIn][strIn++] = c; // Store the char into string
-            numArgs++;
         }
         else
         {
+            word = false;                // Exit the word
             argums[argIn][strIn] = '\0'; // End the string
             argIn++;                     // Move to the next argument
             strIn = 0;                   // Point to its first char
+            while (true)                 // Pass the blank spaces
+            {
+                if ((c = getch(stdin)) == '\n') // Line ended
+                {
+                    return argIn;
+                }
+
+                if (c == ' ') // Skip blank spaces
+                {
+                    continue;
+                }
+
+                ungetch(c); // If the char is non-blank, ungetch it and
+                break;      // break back to outer loop
+            }
         }
     }
-    numArgs++; // We count empty line as one-argument also
 
-    return 1;
-}
+    if (word) // The word ended with newline
+    {
+        argums[argIn][strIn] = '\0';
+        argIn++;
+    }
 
-void whoami(char *name)
-{
+    return argIn;
 }
