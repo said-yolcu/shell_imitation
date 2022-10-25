@@ -93,10 +93,37 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
             }
             else if (numArgs == 4)
             {
+                if (strcmp(argums[2], ">"))
+                {
+                    printf("Correct usage:\n");
+                    printf("printfile <file_1> > <file_2>\n");
+                    return -1;
+                }
+
+                // Create separate processes for each exc call
+                pid_t pid_2;
+                pid_2 = fork();
+                if (pid_2 < 0)
+                {
+                    fprintf(stderr, "Fork Failed");
+                    return 1;
+                }
+                else if (pid_2 == 0)
+                {
+                    execlp("/bin/gcc", "gcc", "./file_copier.c", "-o",
+                           "file_copier", NULL);
+                }
+                else
+                {
+                    wait(NULL);
+                    execlp("./file_copier", "./file_copier", argums[1], argums[3],
+                           NULL);
+                }
             }
             else
             {
                 printf("Invalid number of arguments\n");
+                return -1;
             }
         }
         else if (strcmp(argums[argIn], "dididothat") == 0)
