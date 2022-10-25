@@ -71,10 +71,32 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
         {
             if (numArgs == 2)
             {
-                execlp("/bin/gcc", "gcc", "./file_reader.c", "-o",
-                       "file_reader", NULL);
-                execlp("./file_reader", "./file_reader", argums[1],
-                       NULL);
+                // Create separate processes for each exc call
+                pid_t pid_2;
+                pid_2 = fork();
+                if (pid_2 < 0)
+                {
+                    fprintf(stderr, "Fork Failed");
+                    return 1;
+                }
+                else if (pid_2 == 0)
+                {
+                    execlp("/bin/gcc", "gcc", "./file_reader.c", "-o",
+                           "file_reader", NULL);
+                }
+                else
+                {
+                    wait(NULL);
+                    execlp("./file_reader", "./file_reader", argums[1],
+                           NULL);
+                }
+            }
+            else if (numArgs == 4)
+            {
+            }
+            else
+            {
+                printf("Invalid number of arguments\n");
             }
         }
         else if (strcmp(argums[argIn], "dididothat") == 0)

@@ -25,6 +25,11 @@ int main(int argc, char const *argv[])
             }
             putc(c, stdout);
         }
+
+        if (c == EOF) // If at EOF, return immediately
+        {
+            return 0;
+        }
     } while ((c = getc(stdin)) == '\n');
 
     return 0;
