@@ -11,15 +11,23 @@
 #define MAX_LINE 80
 #define MAX_ARGS 4 // There will be at most 4 arguments
 
+#define BUF_SIZE 25
+#define READ_END 0
+#define WRITE_END 1
+
 int getArgs(char argums[][MAX_LINE + 1], int, int);
 int processArgs(char argums[][MAX_LINE + 1], int numArgs);
-void whoami(char *);
+int whoami(char *);
 
 int main(void)
 {
     char name[MAX_LINE];
-    // whoami(name);
-    strcpy(name, "said"); // CHANGE THAT
+    if (whoami(name) == 1)
+    {
+        fprintf(stderr, "Whoami failed");
+        return 1;
+    }
+    // strcpy(name, "said"); // CHANGE THAT
 
     printf("\n%s >>> ", name);
 
@@ -94,7 +102,7 @@ int getArgs(char argums[][MAX_LINE + 1], int lineLim, int argLim)
     int word = false; // Whether the cha pointer currently points to a word,
                       // or a non-word char such as newline or blank space
 
-    // Skip blank spaces
+    // Skip leading blank spaces
     while (true)
     {
         if ((c = getch(stdin)) == ' ')
@@ -149,4 +157,54 @@ int getArgs(char argums[][MAX_LINE + 1], int lineLim, int argLim)
     }
 
     return argIn;
+}
+
+/*
+Store the current user into the argument string
+Return 1 if error occurs, else return 0
+*/
+int whoami(char *name)
+{
+    char read_msg[BUF_SIZE];
+    int fd[2];
+    pid_t pid;
+
+    if (pipe(fd) == -1) // Create the pipe
+    {
+        fprintf(stderr, "Pipe failed");
+        return 1;
+    }
+
+    pid = fork();
+
+    if (pid < 0)
+    {
+        fprintf(stderr, "Fork failed");
+        return 1;
+    }
+    else if (pid == 0) // Child process
+    {
+        close(fd[READ_END]);        // Close unused end
+        dup2(fd[1], STDOUT_FILENO); // Duplicate the stdout to pipe
+        execlp("/bin/whoami", "whoami", NULL);
+        close(fd[WRITE_END]);
+    }
+    else // Parent process
+    {
+        close(fd[WRITE_END]);
+        // Read from the pipe
+        int nBytes = read(fd[READ_END], read_msg, sizeof(read_msg));
+        for (int i = 0; read_msg[i] != '\0'; i++) // Terminate the string before
+        {                                         // the newline
+            if (read_msg[i] == '\n')
+            {
+                read_msg[i] = '\0';
+                break;
+            }
+        }
+        strcpy(name, read_msg); // Store in argument
+        wait(NULL);
+        close(fd[READ_END]);
+    }
+    return 0;
 }
