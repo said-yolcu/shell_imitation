@@ -17,6 +17,9 @@
 #define READ_END 0
 #define WRITE_END 1
 
+#define INV_USE 2  // Invalid usage exit status
+#define EXIT_COM 3 // Exit command exit status
+
 int getArgs(char argums[][MAX_LINE + 1], int, int, int);
 int processArgs(char argums[][MAX_LINE + 1], int numArgs);
 int whoami(char *);
@@ -35,10 +38,15 @@ int main(void)
 
     char argums[MAX_ARGS][MAX_LINE + 1]; // 4 by 80
     int numArgs;                         // Number of arguments
+    int processStatus;                   // Return status of the process
 
     while ((numArgs = getArgs(argums, MAX_LINE, MAX_ARGS, 0)) != 0)
     {
-        processArgs(argums, numArgs);
+        processStatus = processArgs(argums, numArgs);
+        if (processStatus == -2)
+        {
+            return 0;
+        }
         printf("\n%s >>> ", name);
     }
 }
@@ -47,6 +55,7 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
 {
     pid_t pid;
     pid = fork();
+    static int childStatus;
 
     int argIn = 0;
 
@@ -63,7 +72,7 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
             if (numArgs > 1)
             {
                 printf("%s takes no arguments", argums[0]);
-                exit(-1);
+                exit(INV_USE);
             }
             execlp("/bin/ls", "ls", NULL);
         }
@@ -72,7 +81,7 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
             if (numArgs > 1)
             {
                 printf("%s takes no arguments", argums[0]);
-                exit(-1);
+                exit(INV_USE);
             }
             execlp("/bin/hostname", "hostname", NULL);
         }
@@ -81,7 +90,7 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
             if (numArgs > 1)
             {
                 printf("%s takes no arguments", argums[0]);
-                exit(-1);
+                exit(INV_USE);
             }
             execlp("/bin/hostname", "hostname", "-I", NULL);
         }
@@ -115,9 +124,9 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
                 {
                     printf("Correct usage:\n");
                     printf("printfile <file_1> > <file_2>");
-                    exit(-1); // With using exit instead of return, we ensure
-                              // that the command is recorded to the history
-                              // via not disturbing the execurion of parent
+                    exit(INV_USE); // With using exit instead of return, we ensure
+                                   // that the command is recorded to the history
+                                   // via not disturbing the execurion of parent
                 }
 
                 // Create separate processes for each exc call
@@ -143,7 +152,7 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
             else
             {
                 printf("Invalid number of arguments");
-                exit(-1);
+                exit(INV_USE);
             }
         }
         else if (strcmp(argums[argIn], "dididothat") == 0)
@@ -156,7 +165,7 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
                 {
                     printf("Usage:\n");
                     printf("dididothat \"<command>\"");
-                    exit(-1);
+                    exit(INV_USE);
                 }
                 strcpy(command, argums[2]);
             }
@@ -188,7 +197,7 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
                 {
                     printf("Correct usage:\n");
                     printf("dididothat \"<command>\"");
-                    exit(-1);
+                    exit(INV_USE);
                 }
             }
             else if (numArgs == 2) // dididothat "<command>"
@@ -202,20 +211,20 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
                 else if (strcmp(argums[1], "-allhistory") == 0) // Print last 15 records of history
                 {
                     printHist();
-                    exit(-1); // Do not process to the normal execution
+                    exit(INV_USE); // Do not process to the normal execution
                 }
                 else
                 {
                     printf("Correct usage:\n");
                     printf("dididothat \"<command>\"");
-                    exit(-1);
+                    exit(INV_USE);
                 }
             }
             else
             {
                 printf("Invalid number of arguments. Correct usage:\n");
                 printf("dididothat \"<command>\"");
-                exit(-1);
+                exit(INV_USE);
             }
 
             if (checkHist(command))
@@ -241,16 +250,17 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
             else
             {
                 printf("Invalid number of arguments");
-                exit(-1);
+                exit(INV_USE);
             }
         }
         else if (strcmp(argums[argIn], "exit") == 0)
         {
+            exit(EXIT_COM); // Exit the shell
         }
         else
         {
             printf("There is no such command: %s", argums[argIn]);
-            exit(-1);
+            exit(INV_USE);
         }
         /*
         recordHist(argums[argIn]); // Record the command to the history
@@ -259,7 +269,13 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
     }
     else // Parent process
     {
-        wait(NULL);                // Wait for child to execute
+        wait(&childStatus); // Wait for child to execute
+        printf("Child exit status: %d\n", WEXITSTATUS(childStatus));
+        if (WEXITSTATUS(childStatus) == 3) // Exit the shell
+        {
+            return -2;
+        }
+
         recordHist(argums[argIn]); // Record the command to the history
                                    // after executing the command
     }
