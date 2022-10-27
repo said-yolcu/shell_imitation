@@ -20,7 +20,7 @@ int main(int argc, char const *argv[])
         {
             if (c == '\n')
             {
-                putc(c, stdout);
+                // putc(c, stdout); // Break without printing newline
                 break;
             }
             putc(c, stdout);
