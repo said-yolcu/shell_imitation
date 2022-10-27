@@ -114,7 +114,7 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
                 if (strcmp(argums[2], ">"))
                 {
                     printf("Correct usage:\n");
-                    printf("printfile <file_1> > <file_2>\n");
+                    printf("printfile <file_1> > <file_2>");
                     exit(-1); // With using exit instead of return, we ensure
                               // that the command is recorded to the history
                               // via not disturbing the execurion of parent
@@ -142,7 +142,7 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
             }
             else
             {
-                printf("Invalid number of arguments\n");
+                printf("Invalid number of arguments");
                 exit(-1);
             }
         }
@@ -230,6 +230,19 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs)
         }
         else if (strcmp(argums[argIn], "hellotext") == 0)
         {
+            if (numArgs == 2)
+            {
+                execlp("/bin/gedit", "gedit", argums[1], NULL);
+            }
+            else if (numArgs == 1)
+            {
+                execlp("/bin/gedit", "gedit", NULL);
+            }
+            else
+            {
+                printf("Invalid number of arguments");
+                exit(-1);
+            }
         }
         else if (strcmp(argums[argIn], "exit") == 0)
         {
