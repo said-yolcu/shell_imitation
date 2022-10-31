@@ -3,11 +3,11 @@ CC = gcc
 # Compiler flags
 CFLAGS = -g -Wall
 
-default: attempt
+default: a.out
 
 # Link to create executable "attempt"
-attempt: attempt_1.o char_io.o history.o
-	$(CC) $(CFLAGS) -o attempt attempt_1.o char_io.o history.o
+a.out: attempt_1.o char_io.o history.o
+	$(CC) $(CFLAGS) -o a.out attempt_1.o char_io.o history.o
 
 # Compile and assemble to create object file "attempt_1.o"
 attempt_1.o: attempt_1.c
@@ -21,4 +21,4 @@ history.o: history.c
 
 # Cleaning procedure, type "make clean"
 clean:
-	$(RM) count *.o *~
+	$(RM) a.out file_reader file_copier *.o *~

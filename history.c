@@ -30,11 +30,9 @@ void recordHist(char *command)
 int checkHist(char *command)
 {
     int terminus = full ? 15 : last;
-    printf("%d\n", terminus);
+
     for (int i = 0; i < terminus; i++)
     {
-        printf("<%s>\n", history[i]);
-        printf("<%s>\n", command);
 
         if (strcmp(history[i], command) == 0)
         {

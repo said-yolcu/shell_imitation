@@ -32,9 +32,8 @@ int main(void)
         fprintf(stderr, "Whoami failed");
         return 1;
     }
-    // strcpy(name, "said"); // CHANGE THAT
 
-    printf("\n%s >>> ", name);
+    printf("%s >>> ", name);
 
     char argums[MAX_ARGS][MAX_LINE + 1]; // 4 by 80
     int numArgs;                         // Number of arguments
@@ -48,7 +47,7 @@ int main(void)
         {
             return 0;
         }
-        printf("\n%s >>> ", name);
+        printf("%s >>> ", name);
     }
 }
 
@@ -72,7 +71,7 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs, char *line)
         {
             if (numArgs > 1)
             {
-                printf("%s takes no arguments", argums[0]);
+                printf("%s takes no arguments\n", argums[0]);
                 exit(INV_USE);
             }
             execlp("/bin/ls", "ls", NULL);
@@ -81,7 +80,7 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs, char *line)
         {
             if (numArgs > 1)
             {
-                printf("%s takes no arguments", argums[0]);
+                printf("%s takes no arguments\n", argums[0]);
                 exit(INV_USE);
             }
             execlp("/bin/hostname", "hostname", NULL);
@@ -90,7 +89,7 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs, char *line)
         {
             if (numArgs > 1)
             {
-                printf("%s takes no arguments", argums[0]);
+                printf("%s takes no arguments\n", argums[0]);
                 exit(INV_USE);
             }
             execlp("/bin/hostname", "hostname", "-I", NULL);
@@ -124,7 +123,7 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs, char *line)
                 if (strcmp(argums[2], ">"))
                 {
                     printf("Correct usage:\n");
-                    printf("printfile <file_1> > <file_2>");
+                    printf("printfile <file_1> > <file_2>\n");
                     exit(INV_USE); // With using exit instead of return, we ensure
                                    // that the command is recorded to the history
                                    // via not disturbing the execurion of parent
@@ -152,58 +151,14 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs, char *line)
             }
             else
             {
-                printf("Invalid number of arguments");
+                printf("Invalid number of arguments\n");
                 exit(INV_USE);
             }
         }
         else if (strcmp(argums[argIn], "dididothat") == 0)
         {
             char command[MAX_LINE];
-            /*
-            if (numArgs == 4) // dididothat "  <command>  "
-            {
-                if (strcmp(argums[1], "\"") != 0 || strcmp(argums[3], "\""))
-                {
-                    printf("Usage:\n");
-                    printf("dididothat \"<command>\"");
-                    exit(INV_USE);
-                }
-                strcpy(command, argums[2]);
-            }
-            else if (numArgs == 3)
-            {
-                // dididothat "  <command>"
-                if (strcmp(argums[1], "\"") == 0 &&           // Check if the first arg is \"
-                    argums[2][strlen(argums[2]) - 1] == '\"') // and second arg ends with \"
-                {
-                    // Copy the actual command to the command variable
-                    strncpy(command, argums[2], strlen(argums[2]) - 1);
-                    command[strlen(argums[2]) - 1] = '\0';
-                    for (int i = 0; i <= strlen(command); i++)
-                    {
-                        printf("%c ", command[i]);
-                    }
-                    printf("Commmand is <%s>\n", command);
-                    printf("\n");
-                }
-                // dididothat "<command>   "
-                else if (strcmp(argums[2], "\"") == 0 && // Check if the second arg is \"
-                         argums[1][0] == '\"')           // and first arg end with \"
-                {
-                    // Copy the actual command to the command variable
-                    strncpy(command, &argums[1][1], strlen(argums[1]) - 1);
-                    command[strlen(argums[1]) - 1] = '\0';
-                }
-                else
-                {
-                    printf("Correct usage:\n");
-                    printf("dididothat \"<command>\"");
-                    exit(INV_USE);
-                }
-            }
-            else if (numArgs == 2) // dididothat "<command>"
-            {
-            */
+
             // A quote block is a single word
             if (argums[1][0] == '\"' && argums[1][strlen(argums[1]) - 1] == '\"')
             {
@@ -218,30 +173,19 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs, char *line)
             }
             else
             {
-                for (int arg = 0; arg < numArgs; arg++)
-                {
-                    printf("%s\n", argums[arg]);
-                }
+
                 printf("Correct usage:\n");
-                printf("dididothat \"<command>\"");
+                printf("dididothat \"<command>\"\n");
                 exit(INV_USE);
             }
-            /*
-            }
-            else
-            {
-                printf("Invalid number of arguments. Correct usage:\n");
-                printf("dididothat \"<command>\"");
-                exit(INV_USE);
-            }
-            */
+
             if (checkHist(command))
             {
-                printf("Yes");
+                printf("Yes\n");
             }
             else
             {
-                printf("No");
+                printf("No\n");
             }
             exit(0);
         }
@@ -257,7 +201,7 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs, char *line)
             }
             else
             {
-                printf("Invalid number of arguments");
+                printf("Invalid number of arguments\n");
                 exit(INV_USE);
             }
         }
@@ -267,18 +211,14 @@ int processArgs(char argums[][MAX_LINE + 1], int numArgs, char *line)
         }
         else
         {
-            printf("There is no such command: %s", argums[argIn]);
+            printf("There is no such command: %s\n", argums[argIn]);
             exit(INV_USE);
         }
-        /*
-        recordHist(argums[argIn]); // Record the command to the history
-                                   // after executing the command
-        */
     }
     else // Parent process
     {
         wait(&childStatus); // Wait for child to execute
-        printf("Child exit status: %d\n", WEXITSTATUS(childStatus));
+        // printf("Child exit status: %d\n", WEXITSTATUS(childStatus));
         if (WEXITSTATUS(childStatus) == 3) // Exit the shell
         {
             return -2;
